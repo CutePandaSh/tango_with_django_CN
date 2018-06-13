@@ -21,4 +21,4 @@
 
 虽然在默认情况下，session的功能应该已经被正确设置，并且能够正常使用了，但是详细了解Django的哪些模块提供了哪些对应的功能，是学习Django很好的实践过程。对于session这个功能来说，是由Django的 _中间件middleware_ 来实现的。
 
-让我们按照顺序来检查每一个功能吧，先打开你Django项目文件夹下的`setting.py` 文件。
+让我们按照顺序来检查每一个功能吧，先打开你Django项目文件夹下的`setting.py` 文件。在这个文件中，你能找到一个名为`MIDDLEWARE`的列表，在这个列表中，可以找到一个用字符串`django.contrib.sessions.middleware.SessionMiddleware`表示的模块。如果你没有在列表中看到它，那么现在就马上把它加入这个列表。这个名为`SessionMiddleware`的中间件，就是负责建立唯一`sessionid` cookie的功能模块。在设计上，SessionMiddleware 中间件模块，是可以非常灵活的支持各种不同的方式来存储会话信息的。这里举例了几个不同的解决方案——你可以把所有的信息都存到一个文件里面，或者数据苦，甚至可以存储在内存缓存区中。
