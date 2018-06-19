@@ -91,3 +91,43 @@ def visitor_cookie_handler(request, response):
 
 **请注意，所以从cookie中取到的值，都是字符串 string 类型的** ，_千万不要认为存储了数字的cookie就会返回整数类型 integer_ 。你只能自己手动将取到的值转换成对应的正确类型，这是因为在cookie中已经没有多余的空间来存储对应值的类型了。
 
+如果这个cookie不存在的话，你可以使用 `response` 对象的 `set_cookie()` 方法来进行创建。这个方法需要两个参数，第一个是你想创建的cookie的名称(字符串类型)，第二个是你想存入这个cookie的值。需要注意的是，这个情况下，无论你输入的值是什么类型的，都会被自动转换成字符串类型。
+
+既然我们在代码中使用了 `datetime` ，那么我们需要在 `views.py` 的头部增加以下语句。
+
+```python
+from datetime import datetime
+```
+
+下一步，我们需要更新 `index()` 这个视图方法来应用 `cookie_handler_function()` 这个函数。要实现这个目的，我们要提前取得 `response` 对象。
+
+```python
+def index(request):
+    category_list = Category.objects.order_by('-likes')[:5]
+    page_list = Page.objects.order_by('-views')[:5]
+    context_dict = {'categories': category_list, 'pages': page_list}
+
+    # Obtain our response object early so we can add cookie information.
+    response = render(request, 'rango/index.html', context_dict)
+
+    # Call helper function to handle the cookies
+    visitor_cookie_handler(request, response)
+
+    # Return response to user, updating any cookies that need changed.
+    return response
+```
+
+现在打开Rango的首页，并且打开你浏览器提供的cookie检查器(比如：谷歌浏览器的开发者工具)，你就可以看到 `visits` 和 `last_visit` 这两个cookie。上面的截图显示了操作中的cookie信息，如果你不想使用开发者工具，你可以直接在 `index.html` 模板中加入 `<p>visits: {{ visits }}</p>` 语句，就能在页面上显示访问数量了。
+
+## 10.6 会话数据
+
+上一个例子，我们显示了如何存储和操作客户端的cookie——或者说在客户端存储的cookie。但是存储Session信息更安全的做法是是将相关的数据存储在服务器端。我们可以在客户端匿名存储SessionID的cookie，然后用这个cookie作为主键来访问相关数据。
+
+要使用基于会话的cookie，你需要先做完以下几个步骤：
+
+- 确认在 `setting.py` 的 `MIDDLEWARE_CLASSES` 列表变量中，包含了 `django.contrib.sessions.middleware.SessionMiddleware` 。
+
+- 配置你 `session` 的后端支持。请确认 `django.contrib.sessions` 已经在你的 `setting.py` 文件的 `INSTALLED_APPS` 的列表变量中了。如果没有，请现在把它加上，并且运行 `python manage.py migrate` 命令来更新数据库。
+
+- 默认情况下，基于数据库的后端将会被建立，但是你可能会考虑使用其他的方案(比如基于缓存)来部署，这种情况下，请参考[Django 官方文档：使用其他配置的Session后端](https://docs.djangoproject.com/en/2.0/topics/http/sessions/)
+
